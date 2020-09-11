@@ -1,0 +1,32 @@
+{
+  "name": "ts-test",
+  "version": "0.1.0",
+  "engines": {
+    "sketch": ">=3.0"
+  },
+  "skpm": {
+    "name": "ts-test",
+    "manifest": "src/manifest.json",
+    "main": "ts-test.sketchplugin",
+    "assets": [
+      "assets/**/*"
+    ]
+  },
+  "scripts": {
+    "build": "skpm-build",
+    "watch": "skpm-build --watch",
+    "start": "skpm-build --watch --run",
+    "lint": "eslint .",
+    "postinstall": "npm run build && skpm-link"
+  },
+  "devDependencies": {
+    "@skpm/builder": "<1",
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.1",
+    "eslint": "^7.8.1",
+    "terser-webpack-plugin": "^4.0.0",
+    "ts-loader": "^8.0.0",
+    "typescript": "^4.0.2"
+  },
+  "author": "Graham Sysko <gsysko@gmail.com>"
+}
