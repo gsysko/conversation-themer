@@ -6,13 +6,27 @@
       "name": "Rename bot",
       "identifier": "nm-command-botname",
       "shortcut": "ctrl shift b",
-      "script": "./my-command.ts"
+      "script": "./nm-renamebot.ts"
+    },
+    {
+      "name": "Override bot name",
+      "identifier": "nm-command-overridebotname",
+      "shortcut": "ctrl shift o",
+      "script": "./nm-overridebotname.ts"
+    },
+    {
+      "name": "Swap style",
+      "identifier": "nm-command-swapstyle",
+      "shortcut": "ctrl shift s",
+      "script": "./command.js"
     }
   ],
   "menu": {
     "title": "Conversation Themer",
     "items": [
-      "nm-command-botname"
+      "nm-command-botname",
+      "nm-command-overridebotname",
+      "nm-command-swapstyle"
     ]
   }
 }
