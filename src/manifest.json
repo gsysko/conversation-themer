@@ -3,15 +3,16 @@
   "bundleVersion": 1,
   "commands": [
     {
-      "name": "my-command",
-      "identifier": "my-command-identifier",
+      "name": "Rename bot",
+      "identifier": "nm-command-botname",
+      "shortcut": "ctrl shift b",
       "script": "./my-command.ts"
     }
   ],
   "menu": {
-    "title": "ts-test",
+    "title": "Conversation Themer",
     "items": [
-      "my-command-identifier"
+      "nm-command-botname"
     ]
   }
 }

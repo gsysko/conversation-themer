@@ -3,7 +3,10 @@
     "src", "**/*.ts", "**/*.js"
   ],
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
+    "lib": [
+        "es6"
+    ],
     "module": "esnext",
     "downlevelIteration": true,
     "strict": true,

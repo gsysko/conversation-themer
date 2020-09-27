@@ -1,13 +1,13 @@
 {
-  "name": "ts-test",
+  "name": "conversation-themer",
   "version": "0.1.0",
   "engines": {
     "sketch": ">=3.0"
   },
   "skpm": {
-    "name": "ts-test",
+    "name": "Conversation Themer",
     "manifest": "src/manifest.json",
-    "main": "ts-test.sketchplugin",
+    "main": "conversation-themer.sketchplugin",
     "assets": [
       "assets/**/*"
     ]
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@skpm/builder": "<1",
+    "@types/sketch": "git+https://github.com/qjebbs/sketch.d.ts.git",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "eslint": "^7.8.1",
@@ -28,5 +29,8 @@
     "ts-loader": "^8.0.0",
     "typescript": "^4.0.2"
   },
-  "author": "Graham Sysko <gsysko@gmail.com>"
+  "author": "Graham Sysko <gsysko@gmail.com>",
+  "dependencies": {
+    "@sketch-hq/sketch-file-format-ts": "^5.1.1"
+  }
 }
