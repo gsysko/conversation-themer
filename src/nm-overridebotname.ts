@@ -11,7 +11,7 @@ export default function() {
   sketch.UI.getInputFromUser(
     "What is the bot's existing name?",
     {
-      initialValue: 'Answer Bot',
+      initialValue: 'Answer Bot ‧ Bot',
     },
     (err, firstvalue) => {
       if (err) {

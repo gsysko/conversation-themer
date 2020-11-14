@@ -24,9 +24,7 @@ export default function() {
           var symbolReferences = library.getImportableSymbolReferencesForDocument(document)
           symbolReferences.forEach(importableSymbol => {
             if (importableSymbol.name === '2. system-avatar/3. small/2. image/1. default') {
-              console.log("NAME:" + importableSymbol.name)
               avatarID = importableSymbol.id
-              console.log("ID:" + avatarID)
             }
           })
         })
@@ -35,7 +33,6 @@ export default function() {
           symbolMaster.getAllInstances().forEach(symbolInstance => {
             if (symbolInstance.overrides.some(override => {
              if (override.value === avatarID) {
-                console.log(override.affectedLayer.name)
                 return true
               }
             })) {

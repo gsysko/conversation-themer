@@ -1,3 +1,5 @@
+import { DocumentTimeline } from "sketch";
+
 const sketch = require("sketch");
 const UI = require("sketch/ui");
 const { Library } = require("sketch/dom");
@@ -294,6 +296,23 @@ const buildMainDialog = function(fromLibraries, toLibraries) {
     toLibraryPopUpBtn
   };
 };
+
+export const doUI = function(fromLibraries, toLibraries){
+  const { dialog, fromLibraryPopUpBtn, toLibraryPopUpBtn } = buildMainDialog(
+    fromLibraries,
+    toLibraries
+  );
+  if (dialog.runModal() === NSAlertFirstButtonReturn) {
+    const fromLibrary =
+      fromLibraries.length === 1
+        ? fromLibraries[0]
+        : fromLibraries[fromLibraryPopUpBtn.indexOfSelectedItem()];
+    const toLibrary = filterLibraries(toLibraries, fromLibrary)[
+      toLibraryPopUpBtn.indexOfSelectedItem()
+    ];
+    return { fromLibrary, toLibrary };
+  }
+}
 
 export default function() {
   const document = sketch.getSelectedDocument();

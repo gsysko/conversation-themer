@@ -3,6 +3,12 @@
   "bundleVersion": 1,
   "commands": [
     {
+      "name": "Apply theme",
+      "identifier": "nm-command-applytheme",
+      "shortcut": "ctrl shift t",
+      "script": "./nm-applytheme.ts"
+    },
+    {
       "name": "Rename bot",
       "identifier": "nm-command-botname",
       "shortcut": "ctrl shift b",
@@ -15,18 +21,25 @@
       "script": "./nm-overridebotname.ts"
     },
     {
-      "name": "Swap style",
+      "name": "Swap libary",
       "identifier": "nm-command-swapstyle",
-      "shortcut": "ctrl shift s",
-      "script": "./command.js"
+      "shortcut": "ctrl shift l",
+      "script": "./nm-swaplibrary.ts"
     }
   ],
   "menu": {
     "title": "Conversation Themer",
     "items": [
-      "nm-command-botname",
-      "nm-command-overridebotname",
-      "nm-command-swapstyle"
+      "nm-command-applytheme",
+      "-",
+      {
+        "title": "Utilities",
+        "items": [
+          "nm-command-botname",
+          "nm-command-overridebotname",
+          "nm-command-swapstyle"
+        ]
+      }
     ]
   }
 }

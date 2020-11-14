@@ -1,6 +1,6 @@
 {
   "name": "conversation-themer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "sketch": ">=3.0"
   },
@@ -22,12 +22,12 @@
   "devDependencies": {
     "@skpm/builder": "<1",
     "@types/sketch": "git+https://github.com/qjebbs/sketch.d.ts.git",
-    "@typescript-eslint/eslint-plugin": "^4.0.1",
-    "@typescript-eslint/parser": "^4.0.1",
-    "eslint": "^7.8.1",
-    "terser-webpack-plugin": "^4.0.0",
-    "ts-loader": "^8.0.0",
-    "typescript": "^4.0.2"
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
+    "eslint": "^7.11.0",
+    "terser-webpack-plugin": "^4.2.3",
+    "ts-loader": "^8.0.5",
+    "typescript": "^4.0.3"
   },
   "author": "Graham Sysko <gsysko@gmail.com>",
   "dependencies": {
