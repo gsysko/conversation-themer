@@ -1,9 +1,12 @@
 import { _Sketch } from "sketch/sketch";
 import { doUI } from "./command"
+import { cleanID } from "./sketch-utils";
 
 // Require all
 var sketch: Sketch = require('sketch');
 const pluginName = "Conversation Themer";
+
+
 
 function getLibraryId(library: Library) {
     return library
@@ -11,254 +14,115 @@ function getLibraryId(library: Library) {
         : null
 }
 
-function getReferencedLibrariesForSymbols(document: Document, librariesById: Map<string | null, Library>) {
-    document.getSymbols().forEach(symbolMaster => {
-        const library = symbolMaster.getLibrary()
-        if (!library) return
-        librariesById.set(getLibraryId(library), library)
-    })
-}
-
-function getReferencedLibrariesForSharedStyles(
-    sharedStyles: SharedStyle[],
-    librariesById: Map<any, any>
-  ) {
-    sharedStyles.forEach(sharedStyle => {
-      const library = sharedStyle.getLibrary();
-      if (!library) return;
-  
-      librariesById.set(getLibraryId(library), library);
-    });
-  }
 
 function getCurrentlyReferencedLibraries(document: Document) {
     const librariesById = new Map()
-    getReferencedLibrariesForSymbols(document, librariesById)
-    getReferencedLibrariesForSharedStyles(
-        document.sharedLayerStyles,
-        librariesById
-    )
-    getReferencedLibrariesForSharedStyles(
-        document.sharedTextStyles,
-        librariesById
-    )
+    document.sharedLayerStyles.forEach(sharedStyle => {
+        const library = sharedStyle.getLibrary();
+        if (!library) return;
+    
+        librariesById.set(getLibraryId(library), library);
+      });
     return Array.from(librariesById.values())
 }
 
-function replaceSymbols(document: Document, fromLibraryId: string | null, toLibrary: Library){
-  const overridesById: Map<string, Override[]> = new Map
-  const docSymbols = document.getSymbols()
-  let allSymbolInstances: SymbolInstance[] = []
-  const symbolsMap: Map<string, string> = new Map
-
-  if (!docSymbols.length) {
-    return {symbolsMap, allSymbolInstances}
-  }
-
-  const libSymbols = toLibrary.getImportableSymbolReferencesForDocument(document)
-  let libSymbolsByName: Map<string, ImportableObject> = new Map
-  libSymbols.forEach( libSymbol => {
-    libSymbolsByName.set(libSymbol.name, libSymbol)
-  })
-
-  document.pages.forEach(page => {
-    const nativeLayers = page.sketchObject.children();
-    nativeLayers.forEach((nativelayer: object) => {
-      const layer = sketch.fromNative<Layer>(nativelayer);
-      if (layer.type ==  'SymbolInstance') {
-        const symbolInstance = layer as SymbolInstance
-        symbolInstance.overrides.forEach(override => {
-          if (override.property === "symbolID" && override.value){
-            //Here are all the symbol overrides
-            // console.log(override.value)
-          }
-        })
-      }
-    })
-  })
-
-  docSymbols.forEach(docSymbolMaster => {
-    const library = docSymbolMaster.getLibrary()
-    if (!library || getLibraryId(library) !== fromLibraryId) {
-      //TODO: here I think I need to account for overrides
-      return
-    }
-    const libSymbol = libSymbolsByName.get(docSymbolMaster.name);
-    if (!libSymbol) {
-      //TODO: here I think I need to account for overrides
-      return
-    }
-
-    const importedSymbolMaster = libSymbol.import() as SymbolMaster
-    symbolsMap.set(docSymbolMaster.symbolId, importedSymbolMaster.symbolId);
-
-    const symbolInstances = docSymbolMaster.getAllInstances();
-    allSymbolInstances = allSymbolInstances.concat(symbolInstances);
-    symbolInstances.forEach(symbolInstance => {
-      overridesById.set(symbolInstance.id, symbolInstance.overrides);
-      symbolInstance.symbolId = importedSymbolMaster.symbolId;
-    })
-
-    //TODO: Determine if needed
-    docSymbolMaster.remove
-  })
-
-  return { symbolsMap, symbolInstances: allSymbolInstances, overridesById }
-}
-
-
 
 function replaceSharedStyles(
-  document: Document,
-  docSharedStyles: SharedStyle[],
-  libSharedStyles: ImportableObject[] | undefined,
-  fromLibraryId: string | null
-) {
-  const sharedStylesMap = new Map
+    document: Document,
+    fromLibrary: Library,
+    toLibrary: Library
+  ) {
+    const fromStyles = fromLibrary.getImportableLayerStyleReferencesForDocument(document);
+    const toStyles = toLibrary.getImportableLayerStyleReferencesForDocument(document);
+    const fromStylesById: Map<string, ImportableObject> = new Map
+    const fromStylesByName: Map<string, ImportableObject> = new Map
+    const toStylesById: Map<string, ImportableObject> = new Map
+    const toStylesByName: Map<string, ImportableObject> = new Map
+    const sharedStylesMap = new Map
 
-  const libSharedStylesByName = new Map
-  if(!libSharedStyles){
-    return
-  }
-  libSharedStyles.forEach(libSharedStyle => {
-    libSharedStylesByName.set(libSharedStyle.name, libSharedStyle);
-  });
+    if(!toStyles){
+      return
+    }
+    toStyles.forEach(libSharedStyle => {
+        toStylesByName.set(libSharedStyle.name, libSharedStyle)
+        toStylesById.set(libSharedStyle.id, libSharedStyle)
+    });
+    fromStyles.forEach(libSharedStyle => {
+        fromStylesByName.set(libSharedStyle.name, libSharedStyle)
+        fromStylesById.set(cleanID(libSharedStyle.id), libSharedStyle)
+    });
+  
+    document.pages.forEach(page => {
+      const nativeLayers = page.sketchObject.children();
+      nativeLayers.forEach((nativelayer: object) => {
+        const layer = sketch.fromNative<Layer>(nativelayer);
+        //TODO: What about regular layers? Check that they are not skipped.
+        if (layer.type ==  'SymbolInstance') {
+          swapIt(layer, fromStylesById, toStylesByName);
+        } else if (layer.type ==  'SymbolMaster') {
+          const symbolMaster = layer as SymbolMaster
+          symbolMaster.layers.forEach(layer => {
+            if (layer.type == 'SymbolInstance'){
+              swapIt(layer, fromStylesById, toStylesByName)
+            }
+          })
+        }
+      })
+    })
+  
+    document.sharedLayerStyles.forEach(docSharedStyle => {
+      const library = docSharedStyle.getLibrary();
+      if (!library || getLibraryId(library) !== getLibraryId(fromLibrary)) {
+        return;
+      }
+  
+      const libSharedStyle = toStylesByName.get(docSharedStyle.name);
+      if (!libSharedStyle) {
+        return;
+      }
+  
+      const importedSharedStyle = libSharedStyle.import() as unknown as SharedStyle;
+      sharedStylesMap.set(docSharedStyle.id, importedSharedStyle.id);
+      docSharedStyle.getAllInstancesLayers().forEach(layer => {
+        //TODO: This ensures that local layers swap their styles - maybe there is some better way to do this in a way that is aligned with the overrides.
+        const styledLayer: any = layer
+        styledLayer.sharedStyleId = importedSharedStyle.id;
+        layer.style.syncWithSharedStyle(importedSharedStyle);
+        // console.log("Replaced " + layer.name + "'s style with " + importedSharedStyle.name)
+      });
+    });
+  
+    return sharedStylesMap;
+}
 
-  document.pages.forEach(page => {
-    const nativeLayers = page.sketchObject.children();
-    nativeLayers.forEach((nativelayer: object) => {
-      const layer = sketch.fromNative<Layer>(nativelayer);
-      if (layer.type ==  'SymbolInstance') {
-        const symbolInstance = layer as SymbolInstance
-        symbolInstance.overrides.forEach(override => {
-          if (override.value){
-            switch (override.property) {
-              case "layerStyle":
-                //do something with layer style
-                console.log(override.value)
-                break;
-              case "textStyle":
-                //do something with text style
-                break;
+function swapIt(layer: _Sketch.Layer, fromStylesById: Map<any, any>, toStylesByName: Map<any, any>) {
+  const symbolInstance = layer as SymbolInstance;
+  symbolInstance.overrides.forEach(override => {
+      switch (override.property) {
+        case "layerStyle":
+          // console.log(override.isDefault)
+            // if (layer.name === "conversation/1. default flow") console.log("Lookin at " + override.affectedLayer.name + ":" + (cleanValue ? cleanValue[1] : dirtyValue))
+          const foundFromStyle = fromStylesById.get(cleanID(override.value as string)) as ImportableObject;
+          if (foundFromStyle) {
+              // if (layer.name === "conversation/1. default flow") console.log(override.affectedLayer.name + " should be swapped...")
+            const foundToStyle = toStylesByName.get(foundFromStyle.name) as ImportableObject;
+            if (foundToStyle) {
+              const newStyle = foundToStyle.import() as Style;
+                // if (layer.name === "conversation/1. default flow") console.log("...to " + foundToStyle.name)
+              override.value = newStyle.id;
             }
           }
-        })
+          break;
       }
-    })
-  })
-
-  docSharedStyles.forEach(docSharedStyle => {
-    const library = docSharedStyle.getLibrary();
-    if (!library || getLibraryId(library) !== fromLibraryId) {
-      return;
-    }
-
-    const libSharedStyle = libSharedStylesByName.get(docSharedStyle.name);
-    if (!libSharedStyle) {
-      return;
-    }
-
-    const importedSharedStyle = libSharedStyle.import();
-    sharedStylesMap.set(docSharedStyle.id, importedSharedStyle.id);
-    docSharedStyle.getAllInstancesLayers().forEach(layer => {
-      //TODO: This could probably be done in some better way
-      const styledLayer: any = layer
-      styledLayer.sharedStyleId = importedSharedStyle.id;
-      layer.style.syncWithSharedStyle(importedSharedStyle);
-    });
   });
-
-  return sharedStylesMap;
 }
 
 
-
-function updateSymbolsOverrides(
-  symbolInstances: SymbolInstance[],
-  overridesById: Map<string, Override[]>,
-  symbolsMap: Map<string, string>,
-  layerStylesMap: Map<any, any>,
-  textStylesMap: Map<any, any>
-) {
-  if (symbolInstances){
-    symbolInstances.forEach(symbolInstance => {
-      const overrides = overridesById?.get(symbolInstance.id);
-      overrides?.forEach(override => {
-        switch (override.property) {
-          case "symbolID":
-            //TODO: probably all these should be string, string?
-            if (symbolsMap.has(override.value as string)) {
-              override.value = symbolsMap.get(override.value as string) as string
-            }
-            break;
-  
-          case "layerStyle":
-            if (layerStylesMap.has(override.value)) {
-              override.value = layerStylesMap.get(override.value)
-            }
-            break;
-  
-          case "textStyle":
-            if (textStylesMap.has(override.value)) {
-              override.value = textStylesMap.get(override.value);
-            }
-            break;
-        }
-      });
-    })
-  }
-};
-
-function getImportableSharedStyles(
-  importableObjectType: string,
-  document: Document,
-  library: Library
-) {
-  switch (importableObjectType) {
-    case "layerStyle":
-      return library.getImportableLayerStyleReferencesForDocument(document);
-
-    case "textStyle":
-      return library.getImportableTextStyleReferencesForDocument(document);
-  }
-};
-
-function replaceLibrary(document: Document, fromLibraryId: string | null, toLibrary: Library){
-  const { symbolsMap, symbolInstances, overridesById } = replaceSymbols(document, fromLibraryId, toLibrary) 
-
-  const importableLayerStyles = getImportableSharedStyles(
-    "layerStyle",
-    document,
-    toLibrary
-  );
-  const layerStylesMap = replaceSharedStyles(document, document.sharedLayerStyles, importableLayerStyles, fromLibraryId)
-
-  const importableTextStyles = getImportableSharedStyles(
-    "textStyle",
-    document,
-    toLibrary
-  )
-  const textStylesMap = replaceSharedStyles(
-    document,
-    document.sharedTextStyles,
-    importableTextStyles,
-    fromLibraryId
-  );
-
-  if (symbolInstances && overridesById && layerStylesMap && textStylesMap) {
-    updateSymbolsOverrides(
-      symbolInstances,
-      overridesById,
-      symbolsMap,
-      layerStylesMap,
-      textStylesMap
-    )
-  } else {
-    console.log("SOMETHING HAS GONE HORRIBLY WRANG!")
-  }
-
-  document.sketchObject.reloadInspector()
+function replaceLibrary(document: Document, fromLibrary: Library, toLibrary: Library){
+    replaceSharedStyles(document, fromLibrary, toLibrary)
+    document.sketchObject.reloadInspector()
 }
+
 
 export default function() {
     const document = sketch.getSelectedDocument();
@@ -288,10 +152,9 @@ export default function() {
       toLibraries
     )
     
-    replaceLibrary(document, getLibraryId(fromLibrary), toLibrary);
+    replaceLibrary(document, fromLibrary, toLibrary);
   
     sketch.UI.message(
       `Replaced instances using “${fromLibrary.name}” with “${toLibrary.name}.”`
     )
 }
-  
