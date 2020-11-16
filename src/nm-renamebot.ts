@@ -1,14 +1,43 @@
 //import FileFormat from '@sketch-hq/sketch-file-format-ts'
 
+import { cleanID } from "./sketch-utils";
+
+// import { cleanID } from "./sketch-utils";
+
 // Require all
 var sketch: Sketch = require('sketch');
 
+var botLayerStyle: SharedStyle
+
+function foundBotLayerStyle() {
+  sketch.getSelectedDocument().sharedLayerStyles.forEach(layerStyle => {
+    if (layerStyle.name == 'avatars/bot') {
+      // console.log("Found style " + layerStyle.id + " in " + layerStyle.getLibrary().name)
+      botLayerStyle = layerStyle
+    }
+  })
+  return botLayerStyle ? true : false
+}
+
+function swapBotLabels(symbolInstance: SymbolInstance, value: string) {
+  for (var index = 0; index < symbolInstance.overrides.length; index++)
+  {
+    const override = symbolInstance.overrides[index]
+    if (override.property === "layerStyle" && typeof override.value === "string") {
+      // console.log("Checking " + cleanID(override.value) + " against " + cleanID(botLayerStyle.id))
+      if (cleanID(override.value) === cleanID(botLayerStyle.id)){
+        // console.log("Found " + override.affectedLayer.name + " in " + symbolInstance.name)
+        const botLabelOverride = symbolInstance.overrides[index - 5]
+        if (botLabelOverride.affectedLayer.name == "✏️Label") {
+            // console.log("Overriding" + override.affectedLayer.name)
+            botLabelOverride.value = value
+        }
+      }
+    }
+  }
+}
+
 export default function() {
-
-
-  let document = sketch.Document.getSelectedDocument()
-  var avatarID: string
-
   sketch.UI.getInputFromUser(
     "What is the bot's name?",
     {
@@ -19,36 +48,22 @@ export default function() {
         // most likely the user canceled the input
         return
       } else {
-        var libraries = sketch.Library.getLibraries()
-        libraries.forEach(library => {
-          var symbolReferences = library.getImportableSymbolReferencesForDocument(document)
-          symbolReferences.forEach(importableSymbol => {
-            if (importableSymbol.name === '2. system-avatar/3. small/2. image/1. default') {
-              avatarID = importableSymbol.id
-            }
-          })
-        })
-
-        document.getSymbols().forEach(symbolMaster => {
-          symbolMaster.getAllInstances().forEach(symbolInstance => {
-            if (symbolInstance.overrides.some(override => {
-             if (override.value === avatarID) {
-                return true
-              }
-            })) {
-              symbolInstance.overrides.forEach(override => {
-                if(override.property === "stringValue") {
-                  if (override.affectedLayer.name === "✏️ label") {
-                      if (override.affectedLayer.id === "34C8D8F5-2A7C-4980-B00B-9D04617BDD1A") {
-                        console.log(override.affectedLayer.name)
-                        override.value = value
-                      }
+        if (foundBotLayerStyle()) {
+          sketch.getSelectedDocument().pages.forEach(page => {
+            page.layers.forEach(layer => {
+              if (layer.type ==  'SymbolInstance') {
+                swapBotLabels(layer as SymbolInstance, value)
+              } else if (layer.type ==  'SymbolMaster') {
+                const symbolMaster = layer as SymbolMaster
+                symbolMaster.layers.forEach(layer => {
+                  if (layer.type == 'SymbolInstance'){
+                    swapBotLabels(layer as SymbolInstance, value)
                   }
-                }
-              })
-            }
+                })
+              }
+            })
           })
-        });
+        }
       }
     }
   )

@@ -1,5 +1,7 @@
 import { _Sketch } from "sketch/sketch";
 import { doUI } from "./command"
+import nmRenamebot from "./nm-renamebot";
+import { cleanID } from "./sketch-utils";
 
 // Require all
 var sketch: Sketch = require('sketch');
@@ -48,9 +50,7 @@ function replaceSharedStyles(
     });
     fromStyles.forEach(libSharedStyle => {
         fromStylesByName.set(libSharedStyle.name, libSharedStyle)
-        let bracketCheck = new RegExp('\\[(.*)\\]')
-        const cleanID = libSharedStyle.id.match(bracketCheck)
-        fromStylesById.set(cleanID ? cleanID[1] : libSharedStyle.id, libSharedStyle)
+        fromStylesById.set(cleanID(libSharedStyle.id), libSharedStyle)
     });
   
     document.pages.forEach(page => {
@@ -103,11 +103,8 @@ function swapIt(layer: _Sketch.Layer, fromStylesById: Map<any, any>, toStylesByN
       switch (override.property) {
         case "layerStyle":
           // console.log(override.isDefault)
-          const dirtyValue = override.value as string
-          let bracketCheck = new RegExp('\\[(.*)\\]')
-          const cleanValue = dirtyValue.match(bracketCheck)
             // if (layer.name === "conversation/1. default flow") console.log("Lookin at " + override.affectedLayer.name + ":" + (cleanValue ? cleanValue[1] : dirtyValue))
-          const foundFromStyle = fromStylesById.get(cleanValue ? cleanValue[1] : dirtyValue) as ImportableObject;
+          const foundFromStyle = fromStylesById.get(cleanID(override.value as string)) as ImportableObject;
           if (foundFromStyle) {
               // if (layer.name === "conversation/1. default flow") console.log(override.affectedLayer.name + " should be swapped...")
             const foundToStyle = toStylesByName.get(foundFromStyle.name) as ImportableObject;
@@ -206,4 +203,6 @@ export default function() {
     sketch.UI.message(
       `Replaced instances using “${fromLibrary.name}” with “${toLibrary.name}.”`
     )
+
+    nmRenamebot()
 }
