@@ -9,15 +9,15 @@
       "script": "./nm-applytheme.ts"
     },
     {
-      "name": "Rename bot",
+      "name": "Name bot",
       "identifier": "nm-command-botname",
       "shortcut": "ctrl shift b",
       "script": "./nm-renamebot.ts"
     },
     {
-      "name": "Override bot name",
+      "name": "Replace bot name",
       "identifier": "nm-command-overridebotname",
-      "shortcut": "ctrl shift o",
+      "shortcut": "ctrl shift r",
       "script": "./nm-overridebotname.ts"
     },
     {
