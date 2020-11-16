@@ -99,7 +99,6 @@ function replaceSharedStyles(
 function swapIt(layer: _Sketch.Layer, fromStylesById: Map<any, any>, toStylesByName: Map<any, any>) {
   const symbolInstance = layer as SymbolInstance;
   symbolInstance.overrides.forEach(override => {
-    // if (override.value) {
       switch (override.property) {
         case "layerStyle":
           // console.log(override.isDefault)
@@ -116,56 +115,12 @@ function swapIt(layer: _Sketch.Layer, fromStylesById: Map<any, any>, toStylesByN
           }
           break;
       }
-    // }
   });
-}
-
-function updateSymbolsOverrides(
-    _layerStylesMap: Map<any, any>
-  ) {
-      // console.log(layerStylesMap)
-    // if (symbolInstances){
-    //   symbolInstances.forEach(symbolInstance => {
-    //     const overrides = overridesById?.get(symbolInstance.id);
-    //     overrides?.forEach(override => {
-    //       switch (override.property) {
-    //         case "symbolID":
-    //           //TODO: probably all these should be string, string?
-    //           if (symbolsMap.has(override.value as string)) {
-    //             override.value = symbolsMap.get(override.value as string) as string
-    //           }
-    //           break;
-    
-    //         case "layerStyle":
-    //           if (layerStylesMap.has(override.value)) {
-    //             override.value = layerStylesMap.get(override.value)
-    //           }
-    //           break;
-    
-    //         case "textStyle":
-    //           if (textStylesMap.has(override.value)) {
-    //             override.value = textStylesMap.get(override.value);
-    //           }
-    //           break;
-    //       }
-    //     });
-    //   })
-    // }
 }
 
 
 function replaceLibrary(document: Document, fromLibrary: Library, toLibrary: Library){
-  
-    const layerStylesMap = replaceSharedStyles(document, fromLibrary, toLibrary)
-  
-    if (layerStylesMap) {
-      updateSymbolsOverrides(
-        layerStylesMap
-      )
-    } else {
-      console.log("SOMETHING HAS GONE HORRIBLY WRONG!")
-    }
-  
+    replaceSharedStyles(document, fromLibrary, toLibrary)
     document.sketchObject.reloadInspector()
 }
 
