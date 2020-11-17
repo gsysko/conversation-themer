@@ -9,22 +9,29 @@
       "script": "./nm-applytheme.ts"
     },
     {
-      "name": "Name bot",
+      "name": "Set bot name",
       "identifier": "nm-command-botname",
-      "shortcut": "ctrl shift b",
       "script": "./nm-renamebot.ts"
     },
     {
       "name": "Replace bot name",
       "identifier": "nm-command-overridebotname",
-      "shortcut": "ctrl shift r",
       "script": "./nm-overridebotname.ts"
     },
     {
       "name": "Swap libary",
       "identifier": "nm-command-swapstyle",
-      "shortcut": "ctrl shift l",
       "script": "./nm-swaplibrary.ts"
+    },
+    {
+      "name": "Set title",
+      "identifier": "nm-command-set-title",
+      "script": "./nm-set-title.ts"
+    },
+    {
+      "name": "Set description",
+      "identifier": "nm-command-set-description",
+      "script": "./nm-set-description.ts"
     }
   ],
   "menu": {
@@ -35,9 +42,10 @@
       {
         "title": "Utilities",
         "items": [
-          "nm-command-botname",
-          "nm-command-overridebotname",
-          "nm-command-swapstyle"
+          "nm-command-swapstyle",
+          "nm-command-set-title",
+          "nm-command-set-description",
+          "nm-command-botname"
         ]
       }
     ]

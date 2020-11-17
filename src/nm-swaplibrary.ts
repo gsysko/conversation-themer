@@ -20,7 +20,6 @@ function getCurrentlyReferencedLibraries(document: Document) {
     document.sharedLayerStyles.forEach(sharedStyle => {
         const library = sharedStyle.getLibrary();
         if (!library) return;
-    
         librariesById.set(getLibraryId(library), library);
       });
     return Array.from(librariesById.values())
