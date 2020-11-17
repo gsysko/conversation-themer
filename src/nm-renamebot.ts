@@ -1,40 +1,33 @@
-//import FileFormat from '@sketch-hq/sketch-file-format-ts'
-
 import { cleanID } from "./sketch-utils";
-
-// import { cleanID } from "./sketch-utils";
 
 // Require all
 var sketch: Sketch = require('sketch');
 
-var botLayerStyle: SharedStyle
+var botLayerStyleID: string
 
 function foundBotLayerStyle() {
   sketch.getSelectedDocument().sharedLayerStyles.forEach(layerStyle => {
     if (layerStyle.name == 'avatars/bot') {
       // console.log("Found style " + layerStyle.id + " in " + layerStyle.getLibrary().name)
-      botLayerStyle = layerStyle
+      botLayerStyleID = cleanID(layerStyle.id)
     }
   })
-  return botLayerStyle ? true : false
+  return botLayerStyleID ? true : false
 }
 
 function swapBotLabels(symbolInstance: SymbolInstance, value: string) {
-  for (var index = 0; index < symbolInstance.overrides.length; index++)
-  {
-    const override = symbolInstance.overrides[index]
+  let index = 0
+  symbolInstance.overrides.forEach(override => {
     if (override.property === "layerStyle" && typeof override.value === "string") {
-      // console.log("Checking " + cleanID(override.value) + " against " + cleanID(botLayerStyle.id))
-      if (cleanID(override.value) === cleanID(botLayerStyle.id)){
-        // console.log("Found " + override.affectedLayer.name + " in " + symbolInstance.name)
-        const botLabelOverride = symbolInstance.overrides[index - 5]
-        if (botLabelOverride.affectedLayer.name == "✏️Label") {
-            // console.log("Overriding" + override.affectedLayer.name)
+      if (cleanID(override.value) === botLayerStyleID){
+        let botLabelOverride = symbolInstance.overrides[index - 5]
+        if (botLabelOverride.affectedLayer.name === "✏️Label") {
             botLabelOverride.value = value
         }
       }
     }
-  }
+    index++
+  })
 }
 
 export default function() {
@@ -53,8 +46,8 @@ export default function() {
             page.layers.forEach(layer => {
               if (layer.type ==  'SymbolInstance') {
                 swapBotLabels(layer as SymbolInstance, value)
-              } else if (layer.type ==  'SymbolMaster') {
-                const symbolMaster = layer as SymbolMaster
+              } else if (layer.type ==  'Artboard' || layer.type ==  'SymbolMaster') {
+                const symbolMaster = layer as Layer
                 symbolMaster.layers.forEach(layer => {
                   if (layer.type == 'SymbolInstance'){
                     swapBotLabels(layer as SymbolInstance, value)
