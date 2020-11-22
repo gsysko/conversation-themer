@@ -1,6 +1,6 @@
 {
   "name": "conversation-themer",
-  "version": "0.1.2-1",
+  "version": "0.1.2-2",
   "repository": "https://github.com/gsysko/conversation-themer",
   "description": "A plugin to swap the theme applied to a Zendesk conversation design file.",
   "engines": {
