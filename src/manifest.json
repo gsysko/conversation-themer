@@ -1,4 +1,5 @@
 {
+  "icon": "icon.png",
   "compatibleVersion": 3,
   "bundleVersion": 1,
   "commands": [
