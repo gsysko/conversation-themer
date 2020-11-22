@@ -8,7 +8,6 @@ var botLayerStyleID: string
 function foundBotLayerStyle() {
   sketch.getSelectedDocument().sharedLayerStyles.forEach(layerStyle => {
     if (layerStyle.name == 'avatars/bot') {
-      // console.log("Found style " + layerStyle.id + " in " + layerStyle.getLibrary().name)
       botLayerStyleID = cleanID(layerStyle.id)
     }
   })
